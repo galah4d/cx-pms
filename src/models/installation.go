@@ -1,9 +1,12 @@
 package models
 
 import (
-	"github.com/galah4d/cx-pms/src/utils"
 	"encoding/json"
 	"errors"
+	"github.com/galah4d/cx-pms/config"
+	"github.com/galah4d/cx-pms/src/utils"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -35,7 +38,7 @@ func (i *Installer) Install(pkg Package, path string) error {
 			return errors.New("package installation failed")
 		}
 		i.Installations = append(i.Installations, newInstallation(pkg, path))
-		return i.MarshalJSON("installation.json")
+		return i.MarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH))
 	}
 }
 
@@ -49,13 +52,13 @@ func (i *Installer) Uninstall(pkg Package) error {
 			copy(i.Installations[index:], i.Installations[index+1:])
 			i.Installations[len(i.Installations)-1] = nil
 			i.Installations = i.Installations[:len(i.Installations)-1]
-			return i.MarshalJSON("installation.json")
+			return i.MarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH))
 		}
 	}
 	return errors.New("package not installed")
 }
 
-func (i *Installer) Reinstall (pkg Package, path string) error {
+func (i *Installer) Reinstall(pkg Package, path string) error {
 	if err := i.Uninstall(pkg); err != nil {
 		return err
 	}
@@ -81,15 +84,15 @@ func (i Installer) GetInstallationPath(pkg Package) (string, error) {
 }
 
 type Installation struct {
-	Date time.Time `json:"date"`
-	Path string `json:"path"`
-	Package Package `json:"package"`
+	Date    time.Time `json:"date"`
+	Path    string    `json:"path"`
+	Package Package   `json:"package"`
 }
 
 func newInstallation(pkg Package, path string) *Installation {
 	i := &Installation{
-		Date: time.Now(),
-		Path: path,
+		Date:    time.Now(),
+		Path:    path,
 		Package: pkg,
 	}
 	return i

@@ -1,35 +1,41 @@
 package commands
 
 import (
-	"github.com/galah4d/cx-pms/cli/messages"
-	"github.com/galah4d/cx-pms/src/models"
 	"fmt"
+	"github.com/galah4d/cx-pms/cli/messages"
+	"github.com/galah4d/cx-pms/config"
+	"github.com/galah4d/cx-pms/src/models"
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 var (
 	uninstallReq string
-	yes bool // FIXME var name
+	yes          bool // FIXME var name
 )
 
 var uninstallCmd = &cobra.Command{
 	Use:   "uninstall",
 	Short: "uninstall cx packages",
 	Long:  `Long description...`,
-	Run: uninstall,
+	Run:   uninstall,
 }
 
 func init() {
 	uninstallCmd.Flags().StringVarP(&uninstallReq, "requirement", "r", "requirements.json", "Uninstall all the packages listed in the given requirements file.")
-	uninstallCmd.Flags().BoolVarP(&yes, "yes", "y",  false, "Don't ask for confirmation of uninstall deletions.")
+	uninstallCmd.Flags().BoolVarP(&yes, "yes", "y", false, "Don't ask for confirmation of uninstall deletions.")
 
 	cxpmsCmd.AddCommand(uninstallCmd)
 }
 
 func uninstall(cmd *cobra.Command, args []string) {
 	var installer models.Installer
-	installer.UnmarshalJSON("installation.json") // TODO error handling
+	if err := installer.UnmarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH)); err != nil {
+		fmt.Println("[!] Error: Unable to initialize installer")
+		return
+	}
 
 	// Uninstall packages from a requirements file
 	if cmd.Flags().Changed("requirement") {
@@ -50,7 +56,7 @@ func uninstall(cmd *cobra.Command, args []string) {
 		for _, arg := range args {
 			if strings.Contains(arg, "/") {
 				splitArgs := strings.Split(arg, "/")
-				pkg = models.Package{Name: splitArgs[len(splitArgs)-1], Source:arg}
+				pkg = models.Package{Name: splitArgs[len(splitArgs)-1], Source: arg}
 
 			} else {
 				// TODO uninstall from pkg name

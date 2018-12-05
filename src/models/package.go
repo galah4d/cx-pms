@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/galah4d/cx-pms/src/utils"
 	"fmt"
+	"github.com/galah4d/cx-pms/src/utils"
 	"gopkg.in/src-d/go-git.v4"
 	"os"
 	"path/filepath"
@@ -10,12 +10,12 @@ import (
 )
 
 type Package struct {
-	Name string `json:"name"`
-	Source string `json:"source"`
+	Name         string       `json:"name"`
+	Source       string       `json:"source"`
 	Requirements Requirements `json:"requirements,omitempty"`
 }
 
-func (p *Package) install (target string) error {
+func (p *Package) install(target string) error {
 	fmt.Printf("[+] Installing '%s' from %s... to %s\n", p.Name, p.Source, target)
 	// Initializes the installation directory
 	if err := utils.DirInit(filepath.Join(target, p.Source)); err != nil {
@@ -23,8 +23,8 @@ func (p *Package) install (target string) error {
 	}
 
 	_, err := git.PlainClone(filepath.Join(target, p.Source), false, &git.CloneOptions{
-		URL: "http://" + p.Source,
-		Progress: nil,//os.Stdout,
+		URL:      "http://" + p.Source,
+		Progress: nil, //os.Stdout,
 	})
 	if err != nil {
 		return err // Failed to install package
@@ -32,15 +32,15 @@ func (p *Package) install (target string) error {
 	return nil
 }
 
-func (p Package) IsInstalled () bool {
+func (p Package) IsInstalled() bool {
 	return utils.DirExists(filepath.Join("./pkg", p.Source))
 }
 
-func (p *Package) hasDependencies () bool {
+func (p *Package) hasDependencies() bool {
 	return len(p.Requirements.Packages) > 0
 }
 
-func (p *Package) installRequirements (target string) {
+func (p *Package) installRequirements(target string) {
 	for _, r := range p.Requirements.Packages {
 		err := r.install(target)
 		if err != nil {
@@ -49,26 +49,26 @@ func (p *Package) installRequirements (target string) {
 	}
 }
 
-func (pkg *Package) uninstall (p string) error {
-	fmt.Printf("[+] Uninstalling '%s'\n", pkg.Name)
-	return os.RemoveAll(filepath.Join(p + pkg.Source))
+func (pkg *Package) uninstall(p string) error {
+	fmt.Printf("[+] Uninstalling '%s'\n", filepath.Join(p, pkg.Source))
+	return os.RemoveAll(filepath.Join(p, pkg.Source))
 }
 
-func (pkg *Package) reinstall () error {
+func (pkg *Package) reinstall() error {
 	/*
-	if err := pkg.uninstall(); err != nil {
-		return err
-	}
-	return pkg.install()
-	/*/
+		if err := pkg.uninstall(); err != nil {
+			return err
+		}
+		return pkg.install()
+		/*/
 	return nil
 }
 
-func (p Package) upgrade () error {
+func (p Package) upgrade() error {
 	return nil
 }
 
-func (pkg *Package) GetFiles (installationPath string, suffix string) ([]string, error) {
+func (pkg *Package) GetFiles(installationPath string, suffix string) ([]string, error) {
 	var files []string
 	root := filepath.Join(installationPath, pkg.Source)
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {

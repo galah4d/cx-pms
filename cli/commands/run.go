@@ -1,19 +1,20 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/galah4d/cx-pms/config"
 	"github.com/galah4d/cx-pms/src/models"
-	"fmt"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run short",
 	Long:  `run long`,
-	Run: run,
+	Run:   run,
 }
 
 func init() {
@@ -24,7 +25,7 @@ func init() {
 
 func run(cmd *cobra.Command, args []string) {
 	var installer models.Installer
-	if err := installer.UnmarshalJSON(config.InstallationFilePATH); err != nil {
+	if err := installer.UnmarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH)); err != nil {
 		fmt.Println("[!] Error: Unable to initialize installer")
 		return
 	}

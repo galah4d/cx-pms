@@ -31,3 +31,10 @@ func DirInit(path string) error {
 	}
 	return os.MkdirAll(path, os.ModePerm)
 }
+
+func GetGOPATH() (string, error) {
+	if gopath, ok := os.LookupEnv("GOPATH"); ok {
+		return gopath, nil
+	}
+	return "", errors.New("GOPATH not ser")
+}
