@@ -1,0 +1,8 @@
+{
+  "requirements": [
+    {
+      "name": "math",
+      "source": "github.com/galah4d/math-cx"
+    }
+  ]
+}
