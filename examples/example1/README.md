@@ -1,5 +1,5 @@
-#Example 1
-##Usage
+# Example 1
+## Usage
 Install the required packages from a.json:
 ```console
 cxpms install -r a.json
