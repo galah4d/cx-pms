@@ -1,1 +1,1 @@
-{"installations":[]}
+{"installations":[{"date":"2018-12-05T16:57:57.060694Z","path":"C:\\Users\\Afonso Oliveira\\go\\pkg\\cx-pms","package":{"name":"pacman-cx","source":"github.com/galah4d/pacman-cx","requirements":{"requirements":null}}},{"date":"2018-12-06T00:03:08.5954231Z","path":"C:\\Users\\Afonso Oliveira\\go\\pkg\\cx-pms","package":{"name":"math-cx","source":"github.com/galah4d/math-cx","requirements":{"requirements":null}}}]}

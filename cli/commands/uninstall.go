@@ -2,18 +2,14 @@ package commands
 
 import (
 	"fmt"
-	"github.com/galah4d/cx-pms/cli/messages"
-	"github.com/galah4d/cx-pms/config"
 	"github.com/galah4d/cx-pms/src/models"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
 var (
-	uninstallReq string
-	yes          bool // FIXME var name
+	uninstallReqs string
+	yes           bool // FIXME var name
 )
 
 var uninstallCmd = &cobra.Command{
@@ -24,52 +20,41 @@ var uninstallCmd = &cobra.Command{
 }
 
 func init() {
-	uninstallCmd.Flags().StringVarP(&uninstallReq, "requirement", "r", "requirements.json", "Uninstall all the packages listed in the given requirements file.")
+	uninstallCmd.Flags().StringVarP(&uninstallReqs, "requirements", "r", "requirements.json", "Uninstall all the packages listed in the given requirements file.")
 	uninstallCmd.Flags().BoolVarP(&yes, "yes", "y", false, "Don't ask for confirmation of uninstall deletions.")
 
 	cxpmsCmd.AddCommand(uninstallCmd)
 }
 
 func uninstall(cmd *cobra.Command, args []string) {
-	var installer models.Installer
-	if err := installer.UnmarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH)); err != nil {
-		fmt.Println("[!] Error: Unable to initialize installer")
-		return
-	}
-
 	// Uninstall packages from a requirements file
 	if cmd.Flags().Changed("requirement") {
-		reqs, err := models.LoadRequirements(cmd.Flag("requirement").Value.String())
+		reqs, err := models.LoadRequirements(uninstallReqs)
 		if err != nil {
 			fmt.Println("[!] Error: Unable to load requirements file!")
 			return
 		}
-		for _, pkg := range reqs.Packages {
-			if installer.Installed(pkg) && (yes || messages.AskForConfirmation("Proceed (y/n)?")) {
-				if err := installer.Uninstall(pkg); err != nil {
-					fmt.Println(err)
-				}
-			}
+		if err := pms.UninstallRequirements(reqs, yes); err != nil {
+			fmt.Println(err.Error())
+			return
 		}
+
+		// Uninstall from ars
 	} else {
-		var pkg models.Package
 		for _, arg := range args {
 			if strings.Contains(arg, "/") {
-				splitArgs := strings.Split(arg, "/")
-				pkg = models.Package{Name: splitArgs[len(splitArgs)-1], Source: arg}
-
-			} else {
-				// TODO uninstall from pkg name
-			}
-
-			if installer.Installed(pkg) {
-				if yes || messages.AskForConfirmation("Proceed (y/n)?") {
-					if err := installer.Uninstall(pkg); err != nil {
+				if pkg, ok := pms.GetPackageBySource(arg); ok {
+					if err := pms.UninstallPkg(*pkg, yes); err != nil {
 						fmt.Println("[!] Error: Package uninstall failed!")
 					}
 				}
 			} else {
-				fmt.Printf("[!] Error: Unable to locate package %s!\n", pkg.Name)
+				// FIXME code repetition ^
+				if pkg, ok := pms.GetPackageByName(arg); ok {
+					if err := pms.UninstallPkg(*pkg, yes); err != nil {
+						fmt.Println("[!] Error: Package uninstall failed!")
+					}
+				}
 			}
 		}
 	}

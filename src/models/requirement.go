@@ -1,9 +1,9 @@
 package models
 
 import (
-	"github.com/galah4d/cx-pms/src/utils"
 	"encoding/json"
 	"fmt"
+	"github.com/galah4d/cx-pms/src/utils"
 )
 
 type Requirements struct {
@@ -24,27 +24,23 @@ func LoadRequirements(f string) (*Requirements, error) {
 	}
 	return &requirements, nil
 }
-/*
-func (reqs Requirements) Install (target string, noDeps bool, forceReinstall bool) error {
-	fmt.Println("[+] Installing requirements...")
-	for _, pkg := range reqs.Packages {
-		// If package isn´t installed install it from source
-		if !pkg.IsInstalled() {
-			if err := pkg.install(target); err != nil {
-				fmt.Println(err.Error())
-			}
-		// Otherwise
-		} else {
-			if forceReinstall {
-				pkg.reinstall()
-				pkg.uninstall()
-			}
-		}
 
-
+func (r *Requirements) Load(f string) error {
+	data, err := utils.ReadJson(f)
+	if err != nil {
+		return err // File not found
 	}
-	fmt.Println("[+] Done")
-	return nil
-}*/
+	return json.Unmarshal(data, r)
+}
 
+func (r *Requirements) Save(f string) error {
+	b, err := json.Marshal(r)
+	if err != nil {
+		return err
+	}
+	return utils.DumpJson(b, f)
+}
 
+func (r *Requirements) AddRequirement(pkg Package) {
+	r.Packages = append(r.Packages, pkg)
+}

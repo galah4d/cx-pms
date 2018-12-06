@@ -2,12 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"github.com/galah4d/cx-pms/config"
 	"github.com/galah4d/cx-pms/src/models"
 	"github.com/spf13/cobra"
 	"os"
 	"os/exec"
-	"path/filepath"
 )
 
 var runCmd = &cobra.Command{
@@ -24,12 +22,6 @@ func init() {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	var installer models.Installer
-	if err := installer.UnmarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH)); err != nil {
-		fmt.Println("[!] Error: Unable to initialize installer")
-		return
-	}
-
 	var cxFiles []string
 	// Reads requirements if -r flag is set
 	if cmd.Flags().Changed("requirement") {
@@ -40,7 +32,7 @@ func run(cmd *cobra.Command, args []string) {
 		}
 
 		for _, pkg := range reqs.Packages {
-			path, err := installer.GetInstallationPath(pkg)
+			path, err := pms.Installer.GetInstallationPath(pkg)
 			if err != nil {
 				// Todo package not installed, force-install flag
 			} else {

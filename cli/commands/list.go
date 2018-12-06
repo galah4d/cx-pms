@@ -2,11 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"github.com/galah4d/cx-pms/config"
-	"github.com/galah4d/cx-pms/src/models"
 	"github.com/spf13/cobra"
-	"os"
-	"path/filepath"
 )
 
 var listCmd = &cobra.Command{
@@ -15,7 +11,8 @@ var listCmd = &cobra.Command{
 	Long: `List installed cx packages.
 
 Packages are listed in a case-insensitive sorted order.`,
-	Run: list,
+	Args: cobra.NoArgs,
+	Run:  list,
 }
 
 func init() {
@@ -23,14 +20,9 @@ func init() {
 }
 
 func list(cmd *cobra.Command, args []string) {
-	var installer models.Installer
-	if err := installer.UnmarshalJSON(filepath.Join(os.Getenv("GOPATH"), config.InstallationFilePATH)); err != nil {
-		fmt.Println("[!] Error: Unable to initialize installer")
-		return
-	}
-
 	fmt.Println("Installed Packages:")
-	for _, installation := range installer.Installations { // TODO implement sorting
-		fmt.Printf("%s\t| %s\t| %s\t| %s\t\n", installation.Package.Name, installation.Package.Source, installation.Date, installation.Path)
+	for _, installation := range pms.GetInstallations("by-name") {
+		// TODO add dynamic padding values
+		fmt.Printf("| %-10s | %-30s | %-40s | %-30s |\n", installation.Package.Name, installation.Package.Source, installation.Date, installation.Path)
 	}
 }

@@ -7,11 +7,43 @@ import (
 	"github.com/galah4d/cx-pms/src/utils"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
+type Installation struct {
+	Date    time.Time `json:"date"`
+	Path    string    `json:"path"`
+	Package Package   `json:"package"`
+}
+
+func newInstallation(pkg Package, path string) *Installation {
+	i := &Installation{
+		Date:    time.Now(),
+		Path:    path,
+		Package: pkg,
+	}
+	return i
+}
+
+type Installations []*Installation
+
+func (s Installations) Len() int { return len(s) }
+
+func (s Installations) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+type ByPackageName struct{ Installations }
+
+func (s ByPackageName) Less(i, j int) bool {
+	return s.Installations[i].Package.Name < s.Installations[j].Package.Name
+}
+
+func SortInstallationsByName(s Installations) {
+	sort.Sort(ByPackageName{s})
+}
+
 type Installer struct {
-	Installations []*Installation `json:"installations"`
+	Installations Installations `json:"installations"`
 }
 
 func (i *Installer) UnmarshalJSON(f string) error {
@@ -74,6 +106,15 @@ func (i Installer) Installed(pkg Package) bool {
 	return false
 }
 
+func (i Installer) GetInstallation(name string) (*Installation, error) {
+	for _, installation := range i.Installations {
+		if installation.Package.Name == name {
+			return installation, nil
+		}
+	}
+	return nil, errors.New("package not installed installed")
+}
+
 func (i Installer) GetInstallationPath(pkg Package) (string, error) {
 	for _, installation := range i.Installations {
 		if installation.Package.Source == pkg.Source {
@@ -81,19 +122,4 @@ func (i Installer) GetInstallationPath(pkg Package) (string, error) {
 		}
 	}
 	return "", errors.New("package not installed installed")
-}
-
-type Installation struct {
-	Date    time.Time `json:"date"`
-	Path    string    `json:"path"`
-	Package Package   `json:"package"`
-}
-
-func newInstallation(pkg Package, path string) *Installation {
-	i := &Installation{
-		Date:    time.Now(),
-		Path:    path,
-		Package: pkg,
-	}
-	return i
 }
